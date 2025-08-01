@@ -1,0 +1,158 @@
+{
+  "SM001": {
+    "name": "Major Incidents (P1/P2)",
+    "p1_count": 0,
+    "p2_count": 10,
+    "total_major": 10,
+    "p1_percentage": 0.0,
+    "p2_percentage": 0.4,
+    "targets": {
+      "p1_max": 0,
+      "p2_max": 5,
+      "total_major_max": 5
+    },
+    "status": "Above Target",
+    "business_impact": "High",
+    "escalation_required": false,
+    "calculation_timestamp": "2025-08-01T21:23:44.072465"
+  },
+  "SM002": {
+    "name": "ServiceNow Backlog (Incident Aging)",
+    "backlog_count": 0,
+    "total_incidents": 2385,
+    "backlog_percentage": 0.0,
+    "adherence_rate": 100.0,
+    "aging_threshold_days": 10,
+    "targets": {
+      "backlog_max": 0,
+      "adherence_min": 90.0
+    },
+    "status": "Target Met",
+    "business_impact": "High",
+    "calculation_timestamp": "2025-08-01T21:23:44.072484"
+  },
+  "SM004": {
+    "name": "First Time Fix Rate",
+    "ftf_count": 991,
+    "total_contacts": 2385,
+    "ftf_rate": 41.6,
+    "gap_incidents": 917,
+    "targets": {
+      "ftf_rate_min": 80.0,
+      "ftf_count_min": null
+    },
+    "status": "Critical",
+    "business_impact": "High",
+    "calculation_timestamp": "2025-08-01T21:23:44.072493"
+  },
+  "GEOGRAPHIC": {
+    "name": "Geographic Analysis",
+    "analysis_dimensions": [
+      "country_distribution",
+      "priority_by_country",
+      "volume_trends_by_country",
+      "kpi_performance_by_country"
+    ],
+    "country_statistics": {
+      "total_countries": 12,
+      "country_distribution": {
+        "United Kingdom": 908,
+        "France": 426,
+        "Turkey": 374,
+        "Romania": 330,
+        "Poland": 266,
+        "Germany": 30,
+        "Spain": 29,
+        "Luxembourg": 16,
+        "Italy": 3,
+        "United Arab Emirates": 1,
+        "Portugal": 1,
+        "Ireland": 1
+      },
+      "top_countries": {
+        "United Kingdom": 908,
+        "France": 426,
+        "Turkey": 374,
+        "Romania": 330,
+        "Poland": 266
+      },
+      "priority_by_country": {
+        "United Kingdom": {
+          "total_incidents": 908,
+          "major_incidents": 2,
+          "p1_incidents": 0,
+          "p2_incidents": 2
+        },
+        "Spain": {
+          "total_incidents": 29,
+          "major_incidents": 1,
+          "p1_incidents": 0,
+          "p2_incidents": 1
+        },
+        "Romania": {
+          "total_incidents": 330,
+          "major_incidents": 2,
+          "p1_incidents": 0,
+          "p2_incidents": 2
+        },
+        "France": {
+          "total_incidents": 426,
+          "major_incidents": 2,
+          "p1_incidents": 0,
+          "p2_incidents": 2
+        },
+        "Germany": {
+          "total_incidents": 30,
+          "major_incidents": 0,
+          "p1_incidents": 0,
+          "p2_incidents": 0
+        },
+        "Turkey": {
+          "total_incidents": 374,
+          "major_incidents": 0,
+          "p1_incidents": 0,
+          "p2_incidents": 0
+        },
+        "Poland": {
+          "total_incidents": 266,
+          "major_incidents": 3,
+          "p1_incidents": 0,
+          "p2_incidents": 3
+        },
+        "Luxembourg": {
+          "total_incidents": 16,
+          "major_incidents": 0,
+          "p1_incidents": 0,
+          "p2_incidents": 0
+        },
+        "United Arab Emirates": {
+          "total_incidents": 1,
+          "major_incidents": 0,
+          "p1_incidents": 0,
+          "p2_incidents": 0
+        },
+        "Italy": {
+          "total_incidents": 3,
+          "major_incidents": 0,
+          "p1_incidents": 0,
+          "p2_incidents": 0
+        },
+        "Portugal": {
+          "total_incidents": 1,
+          "major_incidents": 0,
+          "p1_incidents": 0,
+          "p2_incidents": 0
+        },
+        "Ireland": {
+          "total_incidents": 1,
+          "major_incidents": 0,
+          "p1_incidents": 0,
+          "p2_incidents": 0
+        }
+      }
+    },
+    "status": "Available",
+    "business_impact": "Low",
+    "calculation_timestamp": "2025-08-01T21:23:44.081450"
+  }
+}
