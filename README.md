@@ -32,8 +32,8 @@ pyyaml
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/kpi-processor-test.git
-cd kpi-processor-test
+git clone https://github.com/glynncv/kpi_processor_test.git
+cd kpi_processor_test
 ```
 
 2. Create virtual environment:
@@ -53,22 +53,32 @@ pip install pandas pyyaml
 
 1. **Validate Configuration**:
 ```bash
-python scripts/config_validator_fixed.py --config config/complete_kpi_config.yaml
+python scripts/config_validator.py --config config/complete_kpi_config.yaml
 ```
 
 2. **Run Baseline Processing**:
 ```bash
-python scripts/complete_configurable_processor_fixed.py --config config/complete_kpi_config.yaml --mode baseline --input data/raw/your_data.csv
+python scripts/complete_configurable_processor.py --config config/complete_kpi_config.yaml --mode baseline --input data/raw/your_data.csv
 ```
 
 3. **Run Incremental Updates**:
 ```bash
-python scripts/complete_configurable_processor_fixed.py --config config/complete_kpi_config.yaml --mode incremental --input data/raw/updated_data.csv
+python scripts/complete_configurable_processor.py --config config/complete_kpi_config.yaml --mode incremental --input data/raw/updated_data.csv
 ```
 
 4. **Test Complete System**:
 ```bash
 python test_system.py
+```
+
+5. **View Processed Results**:
+```bash
+python show_results.py
+```
+
+6. **Generate Final Summary**:
+```bash
+python final_summary.py
 ```
 
 ## 📁 Project Structure
@@ -78,14 +88,50 @@ kpi_processor_test/
 ├── config/
 │   └── complete_kpi_config.yaml      # Main configuration file
 ├── scripts/
-│   ├── complete_configurable_processor_fixed.py  # Main processor
-│   └── config_validator_fixed.py     # Configuration validator
+│   ├── complete_configurable_processor.py  # Main processor
+│   └── config_validator.py           # Configuration validator
 ├── data/
 │   └── raw/                          # Input data files
 ├── output/                           # Generated results
 ├── cache/                            # Processing cache
+├── test_cache/                       # Test cache directory
 ├── test_system.py                    # System test script
+├── show_results.py                   # Results display helper
+├── final_summary.py                  # Summary generation script
 └── README.md
+```
+
+## 🛠️ Helper Scripts
+
+### test_system.py
+Comprehensive system testing script that validates:
+- Configuration loading and validation
+- Data processing with real ServiceNow data  
+- All three processing modes (baseline/incremental/targeted)
+- Output generation and caching
+
+```bash
+python test_system.py
+```
+
+### show_results.py
+Display formatted results from processed KPI data:
+- KPI performance summary
+- Geographic analysis breakdown
+- Overall scoring and status
+
+```bash
+python show_results.py
+```
+
+### final_summary.py
+Generate comprehensive system summary including:
+- Processing statistics
+- Performance metrics
+- System capabilities overview
+
+```bash
+python final_summary.py
 ```
 
 ## 🎯 Sample Results
@@ -130,19 +176,19 @@ kpis:
 ### Baseline Mode
 Complete processing of all data to establish baseline KPIs:
 ```bash
-python scripts/complete_configurable_processor_fixed.py --config config.yaml --mode baseline --input data.csv
+python scripts/complete_configurable_processor.py --config config.yaml --mode baseline --input data.csv
 ```
 
 ### Incremental Mode
 Efficient updates processing only changed records:
 ```bash
-python scripts/complete_configurable_processor_fixed.py --config config.yaml --mode incremental --input data.csv
+python scripts/complete_configurable_processor.py --config config.yaml --mode incremental --input data.csv
 ```
 
 ### Targeted Mode
 Update specific KPIs with minimal processing:
 ```bash
-python scripts/complete_configurable_processor_fixed.py --config config.yaml --mode targeted --kpi SM001 --input data.csv
+python scripts/complete_configurable_processor.py --config config.yaml --mode targeted --kpi SM001 --input data.csv
 ```
 
 ## 🌍 Geographic Analysis
