@@ -620,7 +620,7 @@ def main():
     # Initialize validator
     validator = ConfigurationValidator(strict_mode=args.strict)
     
-    print(f"CONFIGURATION VALIDATION")
+    print(f"🔍 CONFIGURATION VALIDATION")
     print(f"Configuration: {args.config}")
     print(f"Strict Mode: {'Enabled' if args.strict else 'Disabled'}")
     if args.data:
