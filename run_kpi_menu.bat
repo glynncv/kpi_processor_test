@@ -46,6 +46,10 @@ echo ===========================================================================
 echo                          BASELINE PROCESSING
 echo ================================================================================
 echo.
+
+REM Create output directory if it doesn't exist
+if not exist "output" mkdir output
+
 echo Available data files:
 dir /b data\*.csv 2>nul
 echo.
@@ -56,18 +60,16 @@ if not exist "data\%datafile%" (
     goto MAIN_MENU
 )
 
-echo.
+
 echo Running baseline processing...
-python scripts\complete_configurable_processor_fixed.py ^
-    --config config\kpi_config.yaml ^
-    --mode baseline ^
-    --input data\%datafile% ^
-    --output output\baseline_results.json
+echo Command: python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode baseline --input data\%datafile% --output output\baseline_results.json
+echo.
+
+python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode baseline --input data\%datafile% --output output\baseline_results.json
 
 echo.
-echo Baseline processing completed!
-echo Results saved to: output\baseline_results.json
-pause
+echo Baseline processing completed. Press any key to return to menu...
+pause > nul
 goto MAIN_MENU
 
 :INCREMENTAL
@@ -77,6 +79,10 @@ echo ===========================================================================
 echo                         INCREMENTAL PROCESSING
 echo ================================================================================
 echo.
+
+REM Create output directory if it doesn't exist
+if not exist "output" mkdir output
+
 echo Available data files:
 dir /b data\*.csv 2>nul
 echo.
@@ -89,16 +95,14 @@ if not exist "data\%datafile%" (
 
 echo.
 echo Running incremental processing...
-python scripts\complete_configurable_processor_fixed.py ^
-    --config config\kpi_config.yaml ^
-    --mode incremental ^
-    --input data\%datafile% ^
-    --output output\incremental_results.json
+echo Command: python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode incremental --input data\%datafile% --output output\incremental_results.json
+echo.
+
+python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode incremental --input data\%datafile% --output output\incremental_results.json
 
 echo.
-echo Incremental processing completed!
-echo Results saved to: output\incremental_results.json
-pause
+echo Incremental processing completed. Press any key to return to menu...
+pause > nul
 goto MAIN_MENU
 
 :TARGETED
@@ -108,6 +112,10 @@ echo ===========================================================================
 echo                          TARGETED KPI PROCESSING
 echo ================================================================================
 echo.
+
+REM Create output directory if it doesn't exist
+if not exist "output" mkdir output
+
 echo Available KPIs:
 echo   SM001 - Major Incidents
 echo   SM002 - ServiceNow Backlog
@@ -130,17 +138,14 @@ if not exist "data\%datafile%" (
 
 echo.
 echo Running targeted processing for %kpi%...
-python scripts\complete_configurable_processor_fixed.py ^
-    --config config\kpi_config.yaml ^
-    --mode targeted ^
-    --kpi %kpi% ^
-    --input data\%datafile% ^
-    --output output\targeted_%kpi%_results.json
+echo Command: python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode targeted --kpi %kpi% --input data\%datafile% --output output\targeted_%kpi%_results.json
+echo.
+
+python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode targeted --kpi %kpi% --input data\%datafile% --output output\targeted_%kpi%_results.json
 
 echo.
-echo Targeted processing completed!
-echo Results saved to: output\targeted_%kpi%_results.json
-pause
+echo Targeted processing completed. Press any key to return to menu...
+pause > nul
 goto MAIN_MENU
 
 :VALIDATE
@@ -159,6 +164,9 @@ if "%val_choice%"=="1" (
     echo.
     echo Validating configuration...
     python scripts\config_validator_fixed.py --config config\kpi_config.yaml --strict
+    echo.
+    echo Configuration validation completed. Press any key to continue...
+    pause > nul
 ) else if "%val_choice%"=="2" (
     echo.
     echo Available data files:
@@ -173,6 +181,9 @@ if "%val_choice%"=="1" (
     echo.
     echo Validating configuration with data...
     python scripts\config_validator_fixed.py --config config\kpi_config.yaml --data data\!datafile! --strict
+    echo.
+    echo Configuration validation completed. Press any key to continue...
+    pause > nul
 )
 
 echo.
@@ -186,7 +197,12 @@ echo ===========================================================================
 echo                             SHOW RESULTS
 echo ================================================================================
 echo.
-python show_results.py
+call python show_results.py
+if errorlevel 1 (
+    echo ✗ Failed to show results!
+) else (
+    echo ✓ Results displayed successfully!
+)
 echo.
 pause
 goto MAIN_MENU
@@ -200,7 +216,8 @@ echo ===========================================================================
 echo.
 python test_system.py
 echo.
-pause
+echo System test completed. Press any key to return to menu...
+pause > nul
 goto MAIN_MENU
 
 :FINAL_SUMMARY
@@ -212,7 +229,8 @@ echo ===========================================================================
 echo.
 python final_summary.py
 echo.
-pause
+echo Final summary completed. Press any key to return to menu...
+pause > nul
 goto MAIN_MENU
 
 :QUICK_PROCESS
@@ -237,16 +255,14 @@ if not exist "data\consolidated_data.csv" (
 
 echo.
 echo Running quick baseline processing...
-python scripts\complete_configurable_processor_fixed.py ^
-    --config config\kpi_config.yaml ^
-    --mode baseline ^
-    --input data\consolidated_data.csv ^
-    --output output\quick_results.json
+echo Command: python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode baseline --input data\consolidated_data.csv --output output\quick_results.json
+echo.
+
+python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode baseline --input data\consolidated_data.csv --output output\quick_results.json
 
 echo.
-echo Quick processing completed!
-echo Results saved to: output\quick_results.json
-pause
+echo Quick processing completed. Press any key to return to menu...
+pause > nul
 goto MAIN_MENU
 
 :ADVANCED
@@ -282,12 +298,10 @@ set /p cache_dir="Enter custom cache directory name: "
 set /p datafile="Enter data file name (from data folder): "
 echo.
 echo Running with custom cache directory: %cache_dir%
-python scripts\complete_configurable_processor_fixed.py ^
-    --config config\kpi_config.yaml ^
-    --mode baseline ^
-    --input data\%datafile% ^
-    --cache-dir %cache_dir%
-pause
+python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode baseline --input data\%datafile% --cache-dir %cache_dir%
+echo.
+echo Processing completed. Press any key to continue...
+pause > nul
 goto ADVANCED
 
 :NO_VALIDATION
@@ -295,12 +309,10 @@ echo.
 set /p datafile="Enter data file name (from data folder): "
 echo.
 echo Running without configuration validation...
-python scripts\complete_configurable_processor_fixed.py ^
-    --config config\kpi_config.yaml ^
-    --mode baseline ^
-    --input data\%datafile% ^
-    --no-validation
-pause
+python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode baseline --input data\%datafile% --no-validation
+echo.
+echo Processing completed. Press any key to continue...
+pause > nul
 goto ADVANCED
 
 :CUSTOM_OUTPUT
@@ -309,12 +321,10 @@ set /p datafile="Enter data file name (from data folder): "
 set /p output_file="Enter output file name (with .json extension): "
 echo.
 echo Running with custom output file: %output_file%
-python scripts\complete_configurable_processor_fixed.py ^
-    --config config\kpi_config.yaml ^
-    --mode baseline ^
-    --input data\%datafile% ^
-    --output %output_file%
-pause
+python scripts\complete_configurable_processor_fixed.py --config config\kpi_config.yaml --mode baseline --input data\%datafile% --output %output_file%
+echo.
+echo Processing completed. Press any key to continue...
+pause > nul
 goto ADVANCED
 
 :VIEW_CACHE
