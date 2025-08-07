@@ -241,7 +241,7 @@ class CompleteConfigurableProcessor:
             
             # ServiceNow backlog logic from configuration - fix date arithmetic with proper pandas datetime handling
             resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
-            current_diff = (pd.Timestamp.now() - df_with_dates['opened_at']).dt.days
+            current_diff = (pd.to_datetime('now') - df_with_dates['opened_at']).dt.days
             
             backlog_mask = (
                 (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
@@ -870,7 +870,7 @@ class CompleteConfigurableProcessor:
                 
                 # Calculate backlog using ServiceNow logic - fix date arithmetic with proper pandas datetime handling
                 resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
-                current_diff = (current_date - df_with_dates['opened_at']).dt.days
+                current_diff = (pd.to_datetime(current_date) - df_with_dates['opened_at']).dt.days
                 
                 backlog_mask = (
                     (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
