@@ -1,0 +1,4 @@
+number,priority,state,opened_at,resolved_at,reassignment_count,country
+INC001,Priority 1 - Critical,Resolved,2024-01-01 09:00:00,2024-01-01 12:00:00,0,USA
+INC002,Priority 2 - High,Resolved,2024-01-02 10:00:00,2024-01-05 14:00:00,1,UK
+INC003,Priority 3 - Medium,Open,2024-01-03 11:00:00,,2,Canada
