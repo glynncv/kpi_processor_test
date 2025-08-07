@@ -88,10 +88,8 @@ kpi_processor_test/
 ├── config/
 │   └── complete_kpi_config.yaml      # Main configuration file
 ├── scripts/
-│   ├── complete_configurable_processor_fixed.py  # Main processor (working version)
-│   ├── complete_configurable_processor.py        # Main processor (restored)
-│   ├── config_validator_fixed.py     # Configuration validator (working version)
-│   └── config_validator.py           # Configuration validator (restored)
+│   ├── complete_configurable_processor.py        # Main processor
+│   ├── config_validator.py           # Configuration validator
 ├── data/
 │   └── raw/                          # Input data files
 ├── output/                           # Generated results

@@ -175,7 +175,7 @@ def main():
     # Verify input file exists
     if not Path(args.input).exists():
         print(f" Error: Input file '{args.input}' not found!")
-        return 1
+        return 2  # Use standardized exit code for errors
     
     # Transform data if needed
     processed_input, was_transformed = transform_data_if_needed(args.input)
@@ -204,7 +204,7 @@ def main():
         elif args.mode == 'targeted':
             if not args.kpi:
                 print(" Error: --kpi required for targeted mode")
-                return 1
+                return 2  # Use standardized exit code for errors
             result = processor.process_targeted(args.kpi, processed_input)
             
             # Save targeted results if output specified
@@ -221,9 +221,12 @@ def main():
         
         return 0
         
+    except KeyboardInterrupt:
+        print("\n\n👋 Processing cancelled!")
+        return 130
     except Exception as e:
         print(f" Processing failed: {e}")
-        return 1
+        return 2  # Use standardized exit code for errors
         
     finally:
         # Clean up temporary file if it was created

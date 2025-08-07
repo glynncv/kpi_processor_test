@@ -23,6 +23,15 @@ import logging
 from datetime import datetime
 import re
 import argparse
+import sys
+
+try:
+    from .validation_utils import validate_data_compatibility, validate_kpi_data_requirements, standardize_exit_code
+except ImportError:
+    # Fallback for direct execution
+    import os
+    sys.path.append(os.path.dirname(__file__))
+    from validation_utils import validate_data_compatibility, validate_kpi_data_requirements, standardize_exit_code
 
 class ConfigurationValidator:
     """
@@ -424,101 +433,23 @@ class ConfigurationValidator:
         try:
             # Load data file
             df = pd.read_csv(data_file)
-            actual_columns = set(df.columns)
             
-            # Check column mappings
-            column_mappings = config.get('column_mappings', {})
-            mapped_columns = set(column_mappings.values())
+            compatibility_results = validate_data_compatibility(df, config)
             
-            # Find missing columns
-            missing_columns = mapped_columns - actual_columns
-            if missing_columns:
-                self.validation_errors.append(f"Data file missing columns required by configuration: {list(missing_columns)}")
+            self.validation_errors.extend(compatibility_results['errors'])
+            self.validation_warnings.extend(compatibility_results['warnings'])
             
-            # Find extra columns in data
-            extra_columns = actual_columns - mapped_columns
-            if extra_columns:
-                self.validation_info.append(f"Data file has additional columns not in configuration: {list(extra_columns)[:5]}{'...' if len(extra_columns) > 5 else ''}")
+            if compatibility_results['extra_columns']:
+                self.validation_info.append(f"Data file has additional columns not in configuration: {compatibility_results['extra_columns'][:5]}{'...' if len(compatibility_results['extra_columns']) > 5 else ''}")
             
-            # Validate data format compatibility
-            self._validate_data_formats(df, config)
-            
-            # Check KPI data requirements
-            self._validate_kpi_data_requirements(df, config)
+            # Check KPI data requirements using shared utility
+            kpi_errors, kpi_warnings = validate_kpi_data_requirements(df, config)
+            self.validation_errors.extend(kpi_errors)
+            self.validation_warnings.extend(kpi_warnings)
             
         except Exception as e:
             self.validation_errors.append(f"Error validating data compatibility: {str(e)}")
     
-    def _validate_data_formats(self, df: pd.DataFrame, config: Dict[str, Any]):
-        """Validate data format compatibility"""
-        column_mappings = config.get('column_mappings', {})
-        
-        # Check priority format
-        if 'priority' in column_mappings and column_mappings['priority'] in df.columns:
-            priority_col = column_mappings['priority']
-            sample_priorities = df[priority_col].dropna().head(10)
-            
-            processing_config = config.get('processing', {})
-            regex_pattern = processing_config.get('priority_extraction', {}).get('regex_pattern', r'\d+')
-            
-            try:
-                pattern = re.compile(regex_pattern)
-                non_matching = []
-                for priority in sample_priorities:
-                    if not pattern.search(str(priority)):
-                        non_matching.append(priority)
-                
-                if non_matching:
-                    self.validation_warnings.append(f"Some priority values may not match extraction pattern '{regex_pattern}': {non_matching[:3]}")
-            except re.error:
-                pass  # Already caught in processing config validation
-        
-        # Check date format
-        date_fields = ['opened_at', 'resolved_at', 'closed_at']
-        for field in date_fields:
-            if field in column_mappings and column_mappings[field] in df.columns:
-                date_col = column_mappings[field]
-                sample_dates = df[date_col].dropna().head(5)
-                
-                for date_val in sample_dates:
-                    try:
-                        pd.to_datetime(date_val)
-                    except:
-                        self.validation_warnings.append(f"Date format in column '{date_col}' may not be parseable: example '{date_val}'")
-                        break
-        
-        # Check numeric fields
-        numeric_fields = ['reassignment_count']
-        for field in numeric_fields:
-            if field in column_mappings and column_mappings[field] in df.columns:
-                numeric_col = column_mappings[field]
-                if not pd.api.types.is_numeric_dtype(df[numeric_col]):
-                    non_numeric_samples = df[numeric_col].dropna().head(3)
-                    self.validation_warnings.append(f"Column '{numeric_col}' expected to be numeric but contains: {list(non_numeric_samples)}")
-    
-    def _validate_kpi_data_requirements(self, df: pd.DataFrame, config: Dict[str, Any]):
-        """Validate that data supports configured KPIs"""
-        column_mappings = config.get('column_mappings', {})
-        kpis = config.get('kpis', {})
-        
-        for kpi_id, kpi_config in kpis.items():
-            if not kpi_config.get('enabled', True):
-                continue
-            
-            required_fields = kpi_config.get('required_fields', [])
-            missing_for_kpi = []
-            
-            for field in required_fields:
-                if field not in column_mappings:
-                    missing_for_kpi.append(field)
-                elif column_mappings[field] not in df.columns:
-                    missing_for_kpi.append(f"{field} (mapped to '{column_mappings[field]}')")
-            
-            if missing_for_kpi:
-                if kpi_config.get('data_requirements', {}).get('fallback_behavior') == 'disable':
-                    self.validation_warnings.append(f"KPI '{kpi_id}' missing required data fields and will be disabled: {missing_for_kpi}")
-                else:
-                    self.validation_errors.append(f"KPI '{kpi_id}' missing required data fields: {missing_for_kpi}")
     
     def _build_validation_result(self, validation_passed: bool) -> Dict[str, Any]:
         """Build comprehensive validation result"""
@@ -645,14 +576,26 @@ def main():
         if not args.output:
             print(report)
     
-    # Set exit code based on validation result
-    if result['validation_passed']:
+    # Set exit code based on validation result using standardized pattern
+    errors = result.get('errors', [])
+    warnings = result.get('warnings', [])
+    
+    exit_code = standardize_exit_code(result['validation_passed'], errors, warnings)
+    
+    if exit_code == 0:
         print("✅ Validation completed successfully")
-        return 0
+    elif exit_code == 1:
+        print("⚠️ Validation completed with warnings")
     else:
         print("❌ Validation failed - see errors above")
-        return 1
+    
+    return exit_code
 
 
 if __name__ == "__main__":
-    exit(main())
+    try:
+        exit_code = main()
+        sys.exit(exit_code)
+    except KeyboardInterrupt:
+        print("\n\n👋 Validation cancelled!")
+        sys.exit(130)
