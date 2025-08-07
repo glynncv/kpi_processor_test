@@ -29,9 +29,8 @@ class ResultsDisplay:
             print(f"❌ Output directory '{self.output_dir}' not found!")
             return False
             
-        # Find all JSON result files
-        pattern = str(self.output_dir / "*.json")
-        self.results_files = glob.glob(pattern)
+        # Find all JSON result files using pathlib for better performance
+        self.results_files = [str(p) for p in self.output_dir.glob("*.json")]
         
         if not self.results_files:
             print(f"❌ No result files found in '{self.output_dir}'")

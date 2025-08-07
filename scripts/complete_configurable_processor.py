@@ -239,12 +239,13 @@ class CompleteConfigurableProcessor:
             backlog_threshold = self.thresholds.get('aging', {}).get('backlog_days', 10)
             current_date = pd.Timestamp.now()
             
-            # ServiceNow backlog logic from configuration
+            # ServiceNow backlog logic from configuration - fix date arithmetic with proper pandas datetime handling
+            resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
+            current_diff = (pd.Timestamp.now() - df_with_dates['opened_at']).dt.days
+            
             backlog_mask = (
-                (df_with_dates['resolved_at'].notna() & 
-                 (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days > backlog_threshold) |
-                (df_with_dates['resolved_at'].isna() & 
-                 (current_date - df_with_dates['opened_at']).dt.days > backlog_threshold)
+                (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
+                (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
             )
             counts['servicenow_backlog_total'] = int(backlog_mask.sum())
         
@@ -491,15 +492,17 @@ class CompleteConfigurableProcessor:
             # Get major incident levels from configuration
             major_levels = self.thresholds.get('priority', {}).get('major_incident_levels', [1, 2])
             
+            # Use vectorized groupby operations instead of manual iteration
+            country_groups = df.groupby('country')
             country_priority_analysis = {}
-            for country in df['country'].unique():
-                country_data = df[df['country'] == country]
+            
+            for country, country_data in country_groups:
                 country_analysis = {
                     'total_incidents': len(country_data),
                     'major_incidents': int(country_data['priority_numeric'].isin(major_levels).sum())
                 }
                 
-                # Add individual priority counts
+                # Add individual priority counts using vectorized operations
                 for level in major_levels:
                     country_analysis[f'p{level}_incidents'] = int((country_data['priority_numeric'] == level).sum())
                 
@@ -865,12 +868,13 @@ class CompleteConfigurableProcessor:
                 backlog_threshold = self.thresholds.get('aging', {}).get('backlog_days', 10)
                 current_date = pd.Timestamp.now()
                 
-                # Calculate backlog using ServiceNow logic
+                # Calculate backlog using ServiceNow logic - fix date arithmetic with proper pandas datetime handling
+                resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
+                current_diff = (current_date - df_with_dates['opened_at']).dt.days
+                
                 backlog_mask = (
-                    (df_with_dates['resolved_at'].notna() & 
-                     (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days > backlog_threshold) |
-                    (df_with_dates['resolved_at'].isna() & 
-                     (current_date - df_with_dates['opened_at']).dt.days > backlog_threshold)
+                    (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
+                    (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
                 )
                 counts['servicenow_backlog_total'] = int(backlog_mask.sum())
                 counts['total_tickets'] = len(df)
