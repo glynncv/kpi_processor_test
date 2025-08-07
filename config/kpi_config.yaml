@@ -1,420 +1,146 @@
-# Complete KPI Configuration for Configurable Incremental Processing
-# Version: 2.0
-# Organization: PHINIA (Customizable)
-# Last Updated: 2025-07-31
-
-# Configuration metadata
+# KPI Configuration File - Final Clean Version
 metadata:
-  version: "2.0"
-  organization: "PHINIA"
-  description: "ServiceNow ITSM KPI Configuration for Incremental Processing"
-  last_updated: "2025-07-31"
-  schema_version: "1.0"
-  contact: "IT Service Management Team"
-
-# Column mapping configuration - maps CSV columns to internal field names
+  version: "1.0"
+  description: "KPI Processing Configuration"
+  organization: "IT Service Management"
+  schema_version: "2.0"
+  
 column_mappings:
-  # Core incident fields
-  number: "Number"                    # Incident number/ID
-  opened_at: "Created"               # Incident creation date
-  resolved_at: "Resolved"            # Resolution date
-  closed_at: "Closed"                # Closure date (if different from resolved)
-  
-  # Classification fields
-  priority: "Priority"               # Priority level
-  state: "Incident State"           # Current state
-  category: "Category"               # Primary category
-  subcategory: "Subcategory"        # Secondary category
-  
-  # Assignment and processing
-  assignment_group: "Assignment group"     # Assigned team
-  reassignment_count: "Reassignment count" # Number of reassignments
-  
-  # Description fields
-  short_description: "Short description"   # Brief description
-  description: "Description"               # Detailed description
-  
-  # Geographic and organizational
-  country: "Country"                 # Geographic location
-  location: "Location"               # Specific location
-  site: "Site"                       # Site identifier
-  
-  # People fields (optional - may be redacted)
-  caller_id: "Caller ID"            # Person who reported
-  opened_by: "Opened by"            # Person who created ticket
-  assigned_to: "Assigned to"        # Current assignee
+  # Identity mappings for fields that already have correct names
+  number: "number"
+  priority: "priority"
+  state: "state"
+  opened_at: "opened_at"
+  resolved_at: "resolved_at"
+  reassignment_count: "reassignment_count"
+  country: "country"
+  # Alternative mappings if data comes with different column names
+  incident_number: "number"
+  priority_level: "priority"
+  ticket_state: "state"
+  created_date: "opened_at"
+  closed_date: "resolved_at"
+  transfer_count: "reassignment_count"
+  location: "country"
 
-# Data processing configuration
 processing:
-  # Priority extraction settings
   priority_extraction:
-    regex_pattern: "\\d+"           # Extract first number from priority text
-    fallback_value: 99              # Value for unparseable priorities
-    case_sensitive: false           # Case sensitivity for text matching
-  
-  # Date parsing configuration
+    regex_pattern: "\\d+"
+    fallback_value: 99
   date_parsing:
-    auto_detect: true               # Auto-detect date formats
-    formats:                        # Explicit formats to try
-      - "%Y-%m-%d %H:%M:%S"        # ISO format: 2025-03-29 14:48:16
-      - "%m/%d/%Y %H:%M:%S"        # US format: 03/29/2025 14:48:16
-      - "%d/%m/%Y %H:%M:%S"        # EU format: 29/03/2025 14:48:16
-    timezone: "UTC"                 # Default timezone
-    null_handling: "skip"           # How to handle null dates
-  
-  # Text processing
-  text_processing:
-    trim_whitespace: true           # Remove leading/trailing spaces
-    normalize_case: "lower"         # Normalize text case (lower/upper/title/none)
-    max_description_length: 500     # Truncate long descriptions
-  
-  # Numeric field handling
-  numeric_handling:
-    reassignment_null_value: 0      # Treat null reassignments as 0
-    age_calculation_unit: "days"    # Unit for age calculations
-    precision_decimals: 1           # Decimal places for percentages
+    auto_detect: true
+    formats: 
+      - "%Y-%m-%d %H:%M:%S"
+  signature_fields:
+    - "number"
+    - "priority"
+    - "state"
+    - "reassignment_count"
+    - "resolved_at"
 
-# Threshold configurations - core business rules
 thresholds:
-  # Aging thresholds (in days)
-  aging:
-    backlog_days: 10               # ServiceNow backlog threshold
-    request_aging_days: 30         # Service request aging threshold
-    short_term_aging_days: 7       # Short-term aging threshold
-    long_term_aging_days: 60       # Long-term aging threshold
-  
-  # Priority definitions
   priority:
-    # Priority levels that constitute "major incidents"
-    major_incident_levels: [1, 2]  # P1 and P2 are major incidents
-    critical_level: 1              # P1 is critical
-    high_level: 2                  # P2 is high
-    medium_level: 3                # P3 is medium
-    low_level: 4                   # P4 is low
-    unknown_fallback: 99           # Unknown/unparseable priority
-    
-    # Priority names mapping (for text-based priorities)
-    priority_names:
-      "1 - critical": 1
-      "2 - high": 2
-      "3 - moderate": 3
-      "3 - medium": 3
-      "4 - low": 4
-      "critical": 1
-      "high": 2
-      "medium": 3
-      "moderate": 3
-      "low": 4
-  
-  # Performance thresholds
-  performance:
-    sla_compliance_target: 90.0    # Minimum SLA compliance %
-    resolution_time_p1_hours: 4    # P1 resolution target (hours)
-    resolution_time_p2_hours: 8    # P2 resolution target (hours)
-    resolution_time_p3_hours: 24   # P3 resolution target (hours)
-    resolution_time_p4_hours: 72   # P4 resolution target (hours)
+    major_incident_levels: [1, 2]
+  aging:
+    backlog_days: 10
+  performance_bands:
+    excellent: 90
+    good: 80
+    needs_improvement: 60
 
-# KPI Specifications - complete definitions
+global_status_rules:
+  scorecard_scoring:
+    weight_sm001: 25
+    weight_sm002: 40
+    weight_sm003: 25
+    weight_sm004: 10
+    sm003_disabled_weights:
+      weight_sm001: 25
+      weight_sm002: 50
+      weight_sm004: 25
+  performance_bands:
+    excellent: 90
+    good: 80
+    needs_improvement: 60
+    
 kpis:
-  # SM001 - Major Incidents (P1/P2)
   SM001:
-    name: "Major Incidents (P1/P2)"
-    description: "Critical and high priority incidents impacting business operations"
-    category: "Incident Management"
-    priority: "Critical"
+    name: "Major Incidents"
     enabled: true
-    
-    # Targets and thresholds
+    description: "Priority 1 & 2 Incident Processing"
+    business_impact: "High"
+    escalation_required: true
+    calculation:
+      method: "priority_count"
     targets:
-      p1_max: 0                    # Zero P1 incidents (absolute)
-      p2_max: 5                    # Maximum P2 incidents per period
-      total_major_max: 5           # Maximum total major incidents
-    
-    # Required data fields
+      p1_max: 0
+      p2_max: 5
+      total_major_max: 5
     required_fields:
       - "number"
       - "priority"
-      - "opened_at"
-      - "state"
     
-    # Calculation configuration
-    calculation:
-      method: "priority_count"      # Calculation method identifier
-      count_open_only: false       # Count all incidents, not just open
-      period_based: true           # Calculate for specific time periods
-    
-    # Status determination rules
-    status_rules:
-      target_met: "p1_count == 0 AND p2_count <= targets.p2_max"
-      above_target: "p1_count > 0 OR p2_count > targets.p2_max"
-      critical: "p1_count > 0"     # Any P1 incident is critical
-    
-    # Business impact and escalation
-    business_impact: "High"
-    escalation_required: true
-    escalation_threshold: "p1_count > 0"  # Escalate if any P1 incidents
-  
-  # SM002 - ServiceNow Backlog (Incident Aging)
   SM002:
-    name: "ServiceNow Backlog (Incident Aging)"
-    description: "Incidents resolved >10 days after opening OR open >10 days"
-    category: "Incident Management" 
-    priority: "Strategic"
+    name: "ServiceNow Backlog"  
     enabled: true
-    
-    # Targets and thresholds
-    targets:
-      backlog_max: 0               # Zero backlog incidents (absolute)
-      adherence_min: 90.0          # Minimum adherence rate (%)
-      aging_threshold_days: 10     # Days threshold for backlog
-    
-    # Required data fields
-    required_fields:
-      - "number"
-      - "opened_at"
-      - "resolved_at"
-      - "state"
-    
-    # Calculation configuration
-    calculation:
-      method: "servicenow_backlog"  # ServiceNow-specific backlog logic
-      include_resolved: true       # Include resolved items in backlog calc
-      include_open: true           # Include open items in backlog calc
-    
-    # ServiceNow-specific backlog logic
-    backlog_logic:
-      condition_1: "resolved_at IS NOT NULL AND (resolved_at - opened_at) > aging_threshold_days"
-      condition_2: "resolved_at IS NULL AND (current_date - opened_at) > aging_threshold_days"
-      operator: "OR"               # Combine conditions with OR
-    
-    # Status determination rules
-    status_rules:
-      target_met: "backlog_count == 0"
-      needs_improvement: "backlog_count > 0 OR adherence_rate < targets.adherence_min"
-      critical: "adherence_rate < 50.0"
-    
+    description: "Backlog Analysis"
     business_impact: "High"
-    escalation_required: false
-  
-  # SM003 - Service Request Aging (30-day threshold)
-  SM003:
-    name: "Service Request Aging (30-day threshold)"
-    description: "Service catalog requests aged more than 30 days"
-    category: "Service Request Management"
-    priority: "Strategic"
-    enabled: false               # Disabled - no request data in current CSV
-    
-    # Targets and thresholds  
+    calculation:
+      method: "servicenow_backlog"
     targets:
-      aged_max: 0                 # Zero aged requests (absolute)
-      adherence_min: 90.0         # Minimum adherence rate (%)
-      aging_threshold_days: 30    # Days threshold for request aging
-    
-    # Required data fields
+      backlog_max: 0
+      adherence_min: 90.0
+      aging_threshold_days: 10
     required_fields:
       - "number"
       - "opened_at"
       - "resolved_at"
-      - "state"
-      - "request_type"            # Would need this field for requests
+    backlog_logic:
+      threshold_days: 10
+      include_unresolved: true
     
-    # Calculation configuration
-    calculation:
-      method: "request_aging"      # Request-specific aging logic
-      include_resolved: false     # Only count open requests
-      include_open: true
-    
-    # Status determination rules
-    status_rules:
-      target_met: "aged_count == 0"
-      needs_improvement: "aged_count > 0 OR adherence_rate < targets.adherence_min"
-    
+  SM003:
+    name: "Service Request Aging"
+    enabled: false
+    description: "Service Request Aging Analysis"
     business_impact: "Medium"
-    escalation_required: false
-    
-    # Data availability check
+    calculation:
+      method: "request_aging"
+    targets:
+      aged_max: 0
+      adherence_min: 90.0
+    required_fields:
+      - "number"
+      - "opened_at"
     data_requirements:
-      alternative_table: "sc_request"  # ServiceNow service request table
-      fallback_behavior: "disable"    # Disable if data not available
-  
-  # SM004 - First Time Fix Rate
+      fallback_behavior: "disable"
+    
   SM004:
     name: "First Time Fix Rate"
-    description: "Percentage of incidents resolved without reassignment"
-    category: "Service Desk Performance"
-    priority: "Key"
     enabled: true
-    
-    # Targets and thresholds
+    description: "First Time Fix Rate Analysis"
+    business_impact: "High"
+    calculation:
+      method: "zero_reassignments"
     targets:
-      ftf_rate_min: 80.0          # Minimum first-time fix rate (%)
-      ftf_count_min: null         # No absolute minimum count
-    
-    # Required data fields
+      ftf_rate_min: 80.0
+      ftf_count_min: null
     required_fields:
       - "number"
       - "reassignment_count"
-      - "opened_at"
-    
-    # Calculation configuration
-    calculation:
-      method: "zero_reassignments" # Count incidents with 0 reassignments
-      exclude_cancelled: true     # Exclude cancelled incidents
-      exclude_duplicates: true    # Exclude duplicate incidents
-    
-    # First-time fix definition
-    ftf_definition:
-      zero_reassignments: true    # 0 reassignments = FTF
-      same_group_transfers: false # Transfers within group don't count as reassignments
-      escalations_count: true     # Escalations count as reassignments
-    
-    # Status determination rules
-    status_rules:
-      target_met: "ftf_rate >= targets.ftf_rate_min"
-      below_target: "ftf_rate < targets.ftf_rate_min"
-      critical: "ftf_rate < 60.0"  # Below 60% is critical
-    
-    business_impact: "High"
-    escalation_required: false
-  
-  # GEOGRAPHIC - Geographic Analysis (Bonus KPI)
+      
   GEOGRAPHIC:
     name: "Geographic Analysis"
-    description: "Incident distribution and performance by geographic location"
-    category: "Analytics"
-    priority: "Informational"
     enabled: true
-    
-    # Analysis configuration
-    targets:
-      max_countries_reported: null    # No limit on countries
-      balanced_distribution: false   # No requirement for balanced distribution
-    
-    # Required data fields
+    description: "Geographic Distribution Analysis"
+    business_impact: "Low"
+    calculation:
+      method: "country_distribution"
+      top_countries_limit: 5
+      include_priority_breakdown: true
+    analysis_dimensions:
+      - "country_distribution"
+      - "priority_by_country"
     required_fields:
-      - "number"
       - "country"
       - "priority"
-      - "opened_at"
-    
-    # Calculation configuration
-    calculation:
-      method: "country_distribution"   # Geographic distribution analysis
-      top_countries_limit: 5          # Show top 5 countries
-      include_priority_breakdown: true # Include priority analysis per country
-    
-    # Analysis dimensions
-    analysis_dimensions:
-      - "country_distribution"        # Basic country distribution
-      - "priority_by_country"         # Priority breakdown by country
-      - "volume_trends_by_country"    # Volume trends per country
-      - "kpi_performance_by_country"  # KPI performance by geography
-    
-    business_impact: "Low"
-    escalation_required: false
-
-# Global status determination rules
-global_status_rules:
-  # Overall scorecard scoring
-  scorecard_scoring:
-    weight_sm001: 25              # 25% weight for major incidents
-    weight_sm002: 40              # 40% weight for backlog (strategic)
-    weight_sm003: 25              # 25% weight for requests (if enabled)
-    weight_sm004: 10              # 10% weight for first-time fix
-    
-    # Adjust weights if SM003 disabled
-    sm003_disabled_weights:
-      weight_sm001: 25            # 25% weight for major incidents  
-      weight_sm002: 50            # 50% weight for backlog
-      weight_sm004: 25            # 25% weight for first-time fix
-  
-  # Performance bands
-  performance_bands:
-    excellent: 90                 # 90-100% = Excellent
-    good: 80                      # 80-89% = Good
-    needs_improvement: 60         # 60-79% = Needs Improvement
-    poor: 0                       # 0-59% = Poor
-  
-  # Escalation triggers
-  escalation_triggers:
-    immediate: ["p1_count > 0"]                    # Immediate escalation
-    daily: ["p2_count > targets.p2_max"]          # Daily review
-    weekly: ["adherence_rate < 70"]               # Weekly management review
-    monthly: ["overall_score < 60"]               # Monthly executive review
-
-# Output and reporting configuration
-output:
-  # Format settings
-  formatting:
-    decimal_places: 1             # Decimal places for percentages
-    date_format: "YYYY-MM-DD"     # Date format for output
-    include_timestamps: true      # Include processing timestamps
-    include_metadata: true        # Include configuration metadata
-  
-  # Report sections
-  report_sections:
-    executive_summary: true       # High-level summary
-    kpi_details: true            # Detailed KPI breakdown
-    trends_analysis: false       # Trend analysis (requires historical data)
-    geographic_analysis: true    # Geographic breakdown
-    recommendations: true        # Improvement recommendations
-  
-  # Alert and notification settings
-  notifications:
-    enabled: false               # Enable notifications
-    channels: ["email"]          # Notification channels
-    escalation_matrix:           # Who gets notified for what
-      p1_incidents: ["manager", "director"]
-      target_misses: ["team_lead"]
-      weekly_summary: ["stakeholders"]
-
-# Validation rules for configuration integrity
-validation:
-  # Required sections
-  required_sections:
-    - "metadata"
-    - "column_mappings" 
-    - "kpis"
-    - "thresholds"
-  
-  # Field validation rules
-  field_validation:
-    targets:
-      type: "numeric"
-      min_value: 0
-      max_value: 100
-    
-    thresholds:
-      type: "numeric"
-      min_value: 1
-      max_value: 365
-    
-    weights:
-      type: "numeric"
-      min_value: 0
-      max_value: 100
-      sum_constraint: 100         # All weights must sum to 100
-  
-  # Business logic validation
-  business_rules:
-    - "targets.p1_max should be 0 for zero-tolerance policy"
-    - "thresholds.aging.backlog_days should be <= 30 for reasonable aging"
-    - "All enabled KPIs must have required_fields available in column_mappings"
-    - "KPI weights must sum to 100 when all KPIs are enabled"
-
-# Environment-specific overrides (optional)
-environments:
-  development:
-    thresholds:
-      aging:
-        backlog_days: 5           # Shorter threshold for dev/testing
-    
-  production:
-    validation:
-      strict_mode: true           # Strict validation in production
-    
-  testing:
-    kpis:
-      SM001:
-        targets:
-          p2_max: 10              # Higher threshold for testing
