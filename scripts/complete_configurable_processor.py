@@ -797,10 +797,13 @@ class CompleteConfigurableProcessor:
         available_fields = [field for field in signature_fields if field in df.columns]
         
         if available_fields:
-            for idx, row in df.iterrows():
-                record_id = str(row.get('number', f'row_{idx}'))
-                key_values = '|'.join(str(row.get(field, '')) for field in available_fields)
-                signatures[record_id] = hashlib.md5(key_values.encode()).hexdigest()
+            # Use vectorized operations instead of iterrows() for better performance
+            record_ids = df.get('number', df.index.astype(str)).astype(str)
+            
+            key_values = df[available_fields].fillna('').astype(str).apply(lambda row: '|'.join(row), axis=1)
+            
+            # Generate MD5 hashes vectorized
+            signatures = dict(zip(record_ids, key_values.apply(lambda x: hashlib.md5(x.encode()).hexdigest())))
         
         return signatures
     
