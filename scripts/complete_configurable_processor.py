@@ -1081,9 +1081,16 @@ def main():
         
         # Save results if output file specified
         if args.output:
-            with open(args.output, 'w') as f:
+            output_path = args.output
+            if not Path(args.output).is_absolute():
+                output_dir = Path("output")
+                output_dir.mkdir(exist_ok=True)
+                output_path = str(output_dir / args.output)
+                print(f"Output will be saved to: {output_path}")
+            
+            with open(output_path, 'w') as f:
                 json.dump(result, f, indent=2, default=str)
-            print(f"\nResults saved to {args.output}")
+            print(f"\nResults saved to {output_path}")
         
         print(f"\nCONFIGURATION BENEFITS REALIZED:")
         print(f"• Zero hardcoded KPI specifications")
