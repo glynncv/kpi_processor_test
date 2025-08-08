@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 KPI Processor - Main Entry Point
 ===============================
@@ -12,8 +12,7 @@ import pandas as pd
 import tempfile
 import os
 
-# Add scripts directory to path
-sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
+sys.path.insert(0, str(Path(__file__).parent))
 
 try:
     from complete_configurable_processor import CompleteConfigurableProcessor
@@ -175,11 +174,17 @@ def main():
     # Verify input file exists
     if not Path(args.input).exists():
         print(f" Error: Input file '{args.input}' not found!")
-        return 1
+        return 2  # Use standardized exit code for errors
     
     # Transform data if needed
     processed_input, was_transformed = transform_data_if_needed(args.input)
     temp_file_to_cleanup = processed_input if was_transformed else None
+    
+    if args.output and not Path(args.output).is_absolute():
+        output_dir = Path("output")
+        output_dir.mkdir(exist_ok=True)
+        args.output = str(output_dir / args.output)
+        print(f" Output will be saved to: {args.output}")
     
     try:
         print(f" KPI Processor Starting...")
@@ -204,7 +209,7 @@ def main():
         elif args.mode == 'targeted':
             if not args.kpi:
                 print(" Error: --kpi required for targeted mode")
-                return 1
+                return 2  # Use standardized exit code for errors
             result = processor.process_targeted(args.kpi, processed_input)
             
             # Save targeted results if output specified
@@ -221,9 +226,12 @@ def main():
         
         return 0
         
+    except KeyboardInterrupt:
+        print("\n\n👋 Processing cancelled!")
+        return 130
     except Exception as e:
         print(f" Processing failed: {e}")
-        return 1
+        return 2  # Use standardized exit code for errors
         
     finally:
         # Clean up temporary file if it was created

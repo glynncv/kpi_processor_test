@@ -132,18 +132,26 @@ class CompleteConfigurableProcessor:
         
         date_columns = ['opened_at', 'resolved_at', 'closed_at']
         
+        self.logger.debug(f"Available columns before date parsing: {list(df_copy.columns)}")
+        
         for col in date_columns:
             if col in df_copy.columns:
                 if auto_detect:
-                    df_copy[col] = pd.to_datetime(df_copy[col], errors='coerce')
+                    df_copy[col] = pd.to_datetime(df_copy[col], errors='coerce', dayfirst=True)
+                    self.logger.debug(f"Parsed {col} column with dayfirst=True")
                 else:
                     # Try each format
                     for fmt in formats:
                         try:
                             df_copy[col] = pd.to_datetime(df_copy[col], format=fmt, errors='coerce')
+                            self.logger.debug(f"Parsed {col} column with format {fmt}")
                             break
                         except:
                             continue
+            else:
+                self.logger.warning(f"⚠️ Date column '{col}' not found in data")
+        
+        self.logger.debug(f"Available columns after date parsing: {list(df_copy.columns)}")
         
         return df_copy
     
@@ -239,14 +247,21 @@ class CompleteConfigurableProcessor:
             backlog_threshold = self.thresholds.get('aging', {}).get('backlog_days', 10)
             current_date = pd.Timestamp.now()
             
-            # ServiceNow backlog logic from configuration
-            backlog_mask = (
-                (df_with_dates['resolved_at'].notna() & 
-                 (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days > backlog_threshold) |
-                (df_with_dates['resolved_at'].isna() & 
-                 (current_date - df_with_dates['opened_at']).dt.days > backlog_threshold)
-            )
-            counts['servicenow_backlog_total'] = int(backlog_mask.sum())
+            # Check if resolved_at column exists after date parsing
+            if 'resolved_at' in df_with_dates.columns:
+                # ServiceNow backlog logic from configuration - fix date arithmetic with proper pandas datetime handling
+                resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
+                current_series = pd.Series([pd.Timestamp.now()] * len(df_with_dates), index=df_with_dates.index)
+                current_diff = (current_series - df_with_dates['opened_at']).dt.days
+                
+                backlog_mask = (
+                    (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
+                    (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
+                )
+                counts['servicenow_backlog_total'] = int(backlog_mask.sum())
+            else:
+                self.logger.warning("⚠️ resolved_at column not found after date parsing - skipping backlog calculation")
+                counts['servicenow_backlog_total'] = 0
         
         # First-time fix counts
         if 'reassignment_count' in df.columns:
@@ -491,15 +506,17 @@ class CompleteConfigurableProcessor:
             # Get major incident levels from configuration
             major_levels = self.thresholds.get('priority', {}).get('major_incident_levels', [1, 2])
             
+            # Use vectorized groupby operations instead of manual iteration
+            country_groups = df.groupby('country')
             country_priority_analysis = {}
-            for country in df['country'].unique():
-                country_data = df[df['country'] == country]
+            
+            for country, country_data in country_groups:
                 country_analysis = {
                     'total_incidents': len(country_data),
                     'major_incidents': int(country_data['priority_numeric'].isin(major_levels).sum())
                 }
                 
-                # Add individual priority counts
+                # Add individual priority counts using vectorized operations
                 for level in major_levels:
                     country_analysis[f'p{level}_incidents'] = int((country_data['priority_numeric'] == level).sum())
                 
@@ -797,10 +814,13 @@ class CompleteConfigurableProcessor:
         available_fields = [field for field in signature_fields if field in df.columns]
         
         if available_fields:
-            for idx, row in df.iterrows():
-                record_id = str(row.get('number', f'row_{idx}'))
-                key_values = '|'.join(str(row.get(field, '')) for field in available_fields)
-                signatures[record_id] = hashlib.md5(key_values.encode()).hexdigest()
+            # Use vectorized operations instead of iterrows() for better performance
+            record_ids = df.get('number', df.index.astype(str)).astype(str)
+            
+            key_values = df[available_fields].fillna('').astype(str).apply(lambda row: '|'.join(row), axis=1)
+            
+            # Generate MD5 hashes vectorized
+            signatures = dict(zip(record_ids, key_values.apply(lambda x: hashlib.md5(x.encode()).hexdigest())))
         
         return signatures
     
@@ -862,15 +882,23 @@ class CompleteConfigurableProcessor:
                 backlog_threshold = self.thresholds.get('aging', {}).get('backlog_days', 10)
                 current_date = pd.Timestamp.now()
                 
-                # Calculate backlog using ServiceNow logic
-                backlog_mask = (
-                    (df_with_dates['resolved_at'].notna() & 
-                     (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days > backlog_threshold) |
-                    (df_with_dates['resolved_at'].isna() & 
-                     (current_date - df_with_dates['opened_at']).dt.days > backlog_threshold)
-                )
-                counts['servicenow_backlog_total'] = int(backlog_mask.sum())
-                counts['total_tickets'] = len(df)
+                # Check if resolved_at column exists after date parsing
+                if 'resolved_at' in df_with_dates.columns:
+                    # Calculate backlog using ServiceNow logic - fix date arithmetic with proper pandas datetime handling
+                    resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
+                    current_series = pd.Series([current_date] * len(df_with_dates), index=df_with_dates.index)
+                    current_diff = (current_series - df_with_dates['opened_at']).dt.days
+                    
+                    backlog_mask = (
+                        (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
+                        (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
+                    )
+                    counts['servicenow_backlog_total'] = int(backlog_mask.sum())
+                    counts['total_tickets'] = len(df)
+                else:
+                    self.logger.warning("⚠️ resolved_at column not found after date parsing - skipping backlog calculation")
+                    counts['servicenow_backlog_total'] = 0
+                    counts['total_tickets'] = len(df)
         
         elif kpi_id == 'SM004':
             # First-time fix counts
@@ -1053,9 +1081,16 @@ def main():
         
         # Save results if output file specified
         if args.output:
-            with open(args.output, 'w') as f:
+            output_path = args.output
+            if not Path(args.output).is_absolute():
+                output_dir = Path("output")
+                output_dir.mkdir(exist_ok=True)
+                output_path = str(output_dir / args.output)
+                print(f"Output will be saved to: {output_path}")
+            
+            with open(output_path, 'w') as f:
                 json.dump(result, f, indent=2, default=str)
-            print(f"\nResults saved to {args.output}")
+            print(f"\nResults saved to {output_path}")
         
         print(f"\nCONFIGURATION BENEFITS REALIZED:")
         print(f"• Zero hardcoded KPI specifications")

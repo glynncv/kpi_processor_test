@@ -6,22 +6,13 @@ metadata:
   schema_version: "2.0"
   
 column_mappings:
-  # Identity mappings for fields that already have correct names
   number: "number"
   priority: "priority"
-  state: "state"
+  state: "incident_state"
   opened_at: "opened_at"
-  resolved_at: "resolved_at"
+  resolved_at: "u_resolved"
   reassignment_count: "reassignment_count"
-  country: "country"
-  # Alternative mappings if data comes with different column names
-  incident_number: "number"
-  priority_level: "priority"
-  ticket_state: "state"
-  created_date: "opened_at"
-  closed_date: "resolved_at"
-  transfer_count: "reassignment_count"
-  location: "country"
+  country: "location"
 
 processing:
   priority_extraction:
