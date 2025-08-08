@@ -211,16 +211,9 @@ class CompleteConfigurableProcessor:
             # Save results to file if specified
             if output_file:
                 try:
-                    output_path = output_file
-                    if not Path(output_file).is_absolute():
-                        output_dir = Path("output")
-                        output_dir.mkdir(exist_ok=True)
-                        output_path = str(output_dir / output_file)
-                        self.logger.info(f"Output will be saved to: {output_path}")
-                    
-                    with open(output_path, 'w', encoding='utf-8') as f:
+                    with open(output_file, 'w', encoding='utf-8') as f:
                         json.dump(result, f, indent=2, default=str)
-                    self.logger.info(f"Results saved to {output_path}")
+                    self.logger.info(f"Results saved to {output_file}")
                 except Exception as e:
                     self.logger.warning(f"Failed to save results to {output_file}: {e}")
             
@@ -703,16 +696,9 @@ class CompleteConfigurableProcessor:
             # Save results to file if specified
             if output_file:
                 try:
-                    output_path = output_file
-                    if not Path(output_file).is_absolute():
-                        output_dir = Path("output")
-                        output_dir.mkdir(exist_ok=True)
-                        output_path = str(output_dir / output_file)
-                        self.logger.info(f"Output will be saved to: {output_path}")
-                    
-                    with open(output_path, 'w', encoding='utf-8') as f:
+                    with open(output_file, 'w', encoding='utf-8') as f:
                         json.dump(result, f, indent=2, default=str)
-                    self.logger.info(f"Results saved to {output_path}")
+                    self.logger.info(f"Results saved to {output_file}")
                 except Exception as e:
                     self.logger.warning(f"Failed to save results to {output_file}: {e}")
             
@@ -1095,16 +1081,9 @@ def main():
         
         # Save results if output file specified
         if args.output:
-            output_path = args.output
-            if not Path(args.output).is_absolute():
-                output_dir = Path("output")
-                output_dir.mkdir(exist_ok=True)
-                output_path = str(output_dir / args.output)
-                print(f"Output will be saved to: {output_path}")
-            
-            with open(output_path, 'w') as f:
+            with open(args.output, 'w') as f:
                 json.dump(result, f, indent=2, default=str)
-            print(f"\nResults saved to {output_path}")
+            print(f"\nResults saved to {args.output}")
         
         print(f"\nCONFIGURATION BENEFITS REALIZED:")
         print(f"• Zero hardcoded KPI specifications")
