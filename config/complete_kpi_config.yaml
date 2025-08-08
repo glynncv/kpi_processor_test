@@ -15,34 +15,34 @@ metadata:
 # Column mapping configuration - maps CSV columns to internal field names
 column_mappings:
   # Core incident fields
-  number: "Number"                    # Incident number/ID
-  opened_at: "Created"               # Incident creation date
-  resolved_at: "Resolved"            # Resolution date
-  closed_at: "Closed"                # Closure date (if different from resolved)
+  number: "number"                    # Incident number/ID
+  opened_at: "opened_at"             # Incident creation date
+  resolved_at: "u_resolved"          # Resolution date
+  closed_at: "closed_at"             # Closure date (if different from resolved)
   
   # Classification fields
-  priority: "Priority"               # Priority level
-  state: "Incident State"           # Current state
-  category: "Category"               # Primary category
-  subcategory: "Subcategory"        # Secondary category
+  priority: "priority"               # Priority level
+  state: "incident_state"           # Current state
+  category: "category"               # Primary category
+  subcategory: "u_category"         # Secondary category
   
   # Assignment and processing
-  assignment_group: "Assignment group"     # Assigned team
-  reassignment_count: "Reassignment count" # Number of reassignments
+  assignment_group: "assignment_group"     # Assigned team
+  reassignment_count: "reassignment_count" # Number of reassignments
   
   # Description fields
-  short_description: "Short description"   # Brief description
-  description: "Description"               # Detailed description
+  short_description: "short_description"   # Brief description
+  description: "short_description"         # Detailed description (using short_description as fallback)
   
   # Geographic and organizational
-  country: "Country"                 # Geographic location
-  location: "Location"               # Specific location
-  site: "Site"                       # Site identifier
+  country: "location"                # Geographic location (extracted from location field)
+  location: "location"               # Specific location
+  site: "location"                   # Site identifier (using location field)
   
   # People fields (optional - may be redacted)
-  caller_id: "Caller ID"            # Person who reported
-  opened_by: "Opened by"            # Person who created ticket
-  assigned_to: "Assigned to"        # Current assignee
+  caller_id: "caller_id"            # Person who reported
+  opened_by: "opened_by"            # Person who created ticket
+  assigned_to: "assigned_to"        # Current assignee
 
 # Data processing configuration
 processing:
