@@ -180,6 +180,12 @@ def main():
     processed_input, was_transformed = transform_data_if_needed(args.input)
     temp_file_to_cleanup = processed_input if was_transformed else None
     
+    if args.output and not Path(args.output).is_absolute():
+        output_dir = Path("output")
+        output_dir.mkdir(exist_ok=True)
+        args.output = str(output_dir / args.output)
+        print(f" Output will be saved to: {args.output}")
+    
     try:
         print(f" KPI Processor Starting...")
         print(f"Mode: {args.mode}")
