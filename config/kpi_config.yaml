@@ -8,11 +8,11 @@ metadata:
 column_mappings:
   number: "number"
   priority: "priority"
-  state: "state"
+  state: "incident_state"
   opened_at: "opened_at"
-  resolved_at: "resolved_at"
+  resolved_at: "u_resolved"
   reassignment_count: "reassignment_count"
-  country: "country"
+  country: "location"
 
 processing:
   priority_extraction:

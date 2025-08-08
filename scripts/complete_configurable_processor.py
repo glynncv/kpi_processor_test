@@ -132,18 +132,26 @@ class CompleteConfigurableProcessor:
         
         date_columns = ['opened_at', 'resolved_at', 'closed_at']
         
+        self.logger.debug(f"Available columns before date parsing: {list(df_copy.columns)}")
+        
         for col in date_columns:
             if col in df_copy.columns:
                 if auto_detect:
                     df_copy[col] = pd.to_datetime(df_copy[col], errors='coerce', dayfirst=True)
+                    self.logger.debug(f"Parsed {col} column with dayfirst=True")
                 else:
                     # Try each format
                     for fmt in formats:
                         try:
                             df_copy[col] = pd.to_datetime(df_copy[col], format=fmt, errors='coerce')
+                            self.logger.debug(f"Parsed {col} column with format {fmt}")
                             break
                         except:
                             continue
+            else:
+                self.logger.warning(f"⚠️ Date column '{col}' not found in data")
+        
+        self.logger.debug(f"Available columns after date parsing: {list(df_copy.columns)}")
         
         return df_copy
     
@@ -239,16 +247,21 @@ class CompleteConfigurableProcessor:
             backlog_threshold = self.thresholds.get('aging', {}).get('backlog_days', 10)
             current_date = pd.Timestamp.now()
             
-            # ServiceNow backlog logic from configuration - fix date arithmetic with proper pandas datetime handling
-            resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
-            current_series = pd.Series([pd.Timestamp.now()] * len(df_with_dates), index=df_with_dates.index)
-            current_diff = (current_series - df_with_dates['opened_at']).dt.days
-            
-            backlog_mask = (
-                (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
-                (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
-            )
-            counts['servicenow_backlog_total'] = int(backlog_mask.sum())
+            # Check if resolved_at column exists after date parsing
+            if 'resolved_at' in df_with_dates.columns:
+                # ServiceNow backlog logic from configuration - fix date arithmetic with proper pandas datetime handling
+                resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
+                current_series = pd.Series([pd.Timestamp.now()] * len(df_with_dates), index=df_with_dates.index)
+                current_diff = (current_series - df_with_dates['opened_at']).dt.days
+                
+                backlog_mask = (
+                    (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
+                    (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
+                )
+                counts['servicenow_backlog_total'] = int(backlog_mask.sum())
+            else:
+                self.logger.warning("⚠️ resolved_at column not found after date parsing - skipping backlog calculation")
+                counts['servicenow_backlog_total'] = 0
         
         # First-time fix counts
         if 'reassignment_count' in df.columns:
@@ -869,17 +882,23 @@ class CompleteConfigurableProcessor:
                 backlog_threshold = self.thresholds.get('aging', {}).get('backlog_days', 10)
                 current_date = pd.Timestamp.now()
                 
-                # Calculate backlog using ServiceNow logic - fix date arithmetic with proper pandas datetime handling
-                resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
-                current_series = pd.Series([current_date] * len(df_with_dates), index=df_with_dates.index)
-                current_diff = (current_series - df_with_dates['opened_at']).dt.days
-                
-                backlog_mask = (
-                    (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
-                    (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
-                )
-                counts['servicenow_backlog_total'] = int(backlog_mask.sum())
-                counts['total_tickets'] = len(df)
+                # Check if resolved_at column exists after date parsing
+                if 'resolved_at' in df_with_dates.columns:
+                    # Calculate backlog using ServiceNow logic - fix date arithmetic with proper pandas datetime handling
+                    resolved_diff = (df_with_dates['resolved_at'] - df_with_dates['opened_at']).dt.days
+                    current_series = pd.Series([current_date] * len(df_with_dates), index=df_with_dates.index)
+                    current_diff = (current_series - df_with_dates['opened_at']).dt.days
+                    
+                    backlog_mask = (
+                        (df_with_dates['resolved_at'].notna() & (resolved_diff > backlog_threshold)) |
+                        (df_with_dates['resolved_at'].isna() & (current_diff > backlog_threshold))
+                    )
+                    counts['servicenow_backlog_total'] = int(backlog_mask.sum())
+                    counts['total_tickets'] = len(df)
+                else:
+                    self.logger.warning("⚠️ resolved_at column not found after date parsing - skipping backlog calculation")
+                    counts['servicenow_backlog_total'] = 0
+                    counts['total_tickets'] = len(df)
         
         elif kpi_id == 'SM004':
             # First-time fix counts
