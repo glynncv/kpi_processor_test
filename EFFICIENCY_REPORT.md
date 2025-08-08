@@ -7,7 +7,7 @@ This report documents efficiency issues identified in the KPI processor codebase
 ## Issues Identified
 
 ### 1. 🚨 **CRITICAL: BOM Character Causing Syntax Errors**
-- **File**: `kpi_processor.py:1`
+- **File**: `scripts/kpi_processor.py:1`
 - **Issue**: UTF-8 BOM (Byte Order Mark) character at start of file causes Python syntax errors
 - **Impact**: Prevents script execution entirely
 - **Fix**: Remove BOM character from file header

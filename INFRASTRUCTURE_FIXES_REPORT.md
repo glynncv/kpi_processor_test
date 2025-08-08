@@ -21,7 +21,7 @@
 - `data_validator.py`: 0/1/2/130 (success/warning/error/interrupted)
 - `kpi_automation.py`: 0/1/2/130 (success/warning/error/interrupted)
 - `system_health_monitor.py`: 0/1/130 (success/error/interrupted)
-- `kpi_processor.py`: 0/1 (simple success/failure)
+- `scripts/kpi_processor.py`: 0/1 (simple success/failure)
 
 **Fix**: Standardized all scripts to use 0/1/2/130 pattern:
 - 0: Success

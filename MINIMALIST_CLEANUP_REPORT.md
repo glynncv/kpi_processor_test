@@ -34,7 +34,7 @@
 ## Remaining Essential Files
 
 ### Core Processing
-- `kpi_processor.py` - Core processor with auto-detection
+- `scripts/kpi_processor.py` - Core processor with auto-detection
 - `scripts/complete_configurable_processor.py` - Main KPI processor
 - `scripts/config_validator.py` - Configuration validation
 
