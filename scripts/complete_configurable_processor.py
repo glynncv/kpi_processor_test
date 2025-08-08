@@ -135,7 +135,7 @@ class CompleteConfigurableProcessor:
         for col in date_columns:
             if col in df_copy.columns:
                 if auto_detect:
-                    df_copy[col] = pd.to_datetime(df_copy[col], errors='coerce')
+                    df_copy[col] = pd.to_datetime(df_copy[col], errors='coerce', dayfirst=True)
                 else:
                     # Try each format
                     for fmt in formats:
