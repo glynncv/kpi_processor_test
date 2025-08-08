@@ -1,20 +1,20 @@
-# ServiceNow ITSM KPI Processing System
+# KPI Processor Test
 
-A comprehensive, configurable KPI processing system for ServiceNow ITSM data with support for baseline, incremental, and targeted processing modes.
+A minimalist, efficient KPI processing system for ServiceNow ITSM data analysis with configurable thresholds and automated validation.
 
 ## 🚀 Features
 
-- **Fully Configurable**: External YAML configuration for all KPI specifications, thresholds, and business rules
-- **Multiple Processing Modes**: Baseline, incremental, and targeted KPI updates
-- **Real-time Analytics**: Geographic analysis and performance scoring
-- **Production Ready**: Comprehensive validation, error handling, and caching
-- **Scalable Architecture**: Supports large datasets with incremental processing
+- **Configurable KPI Processing**: Baseline, incremental, and targeted processing modes
+- **Flexible Column Mapping**: Adapts to different ServiceNow CSV structures
+- **Data Validation**: Comprehensive configuration and data compatibility checking
+- **Efficient Processing**: Optimized pandas operations for large datasets
+- **Date Format Support**: Handles DD/MM/YYYY European date formats
+- **Defensive Programming**: Graceful handling of missing columns with clear warnings
 
 ## 📊 Supported KPIs
 
 - **SM001**: Major Incidents (P1/P2) tracking and management
-- **SM002**: ServiceNow Backlog (Incident Aging) monitoring  
-- **SM003**: Service Request Aging analysis (configurable)
+- **SM002**: ServiceNow Backlog (Incident Aging) monitoring
 - **SM004**: First Time Fix Rate measurement
 - **GEOGRAPHIC**: Multi-country incident distribution analysis
 
@@ -23,7 +23,7 @@ A comprehensive, configurable KPI processing system for ServiceNow ITSM data wit
 ### Prerequisites
 
 ```bash
-Python 3.8+
+Python 3.7+
 pandas
 pyyaml
 ```
@@ -36,49 +36,34 @@ git clone https://github.com/glynncv/kpi_processor_test.git
 cd kpi_processor_test
 ```
 
-2. Create virtual environment:
-```bash
-python -m venv venv
-venv\Scripts\activate  # Windows
-# or
-source venv/bin/activate  # Linux/Mac
-```
-
-3. Install dependencies:
+2. Install dependencies:
 ```bash
 pip install pandas pyyaml
 ```
 
 ### Basic Usage
 
-1. **Validate Configuration**:
+#### 1. Validate Configuration
 ```bash
-python scripts/config_validator.py --config config/complete_kpi_config.yaml
+python scripts/config_validator.py --config config/kpi_config.yaml
 ```
 
-2. **Run Baseline Processing**:
+#### 2. Process Your Data
 ```bash
-python scripts/complete_configurable_processor.py --config config/complete_kpi_config.yaml --mode baseline --input data/raw/your_data.csv
+# Baseline processing
+python scripts/complete_configurable_processor.py --config config/kpi_config.yaml --mode baseline --input "your_data.csv"
+
+# Incremental processing
+python scripts/complete_configurable_processor.py --config config/kpi_config.yaml --mode incremental --input "your_data.csv"
+
+# Targeted KPI processing
+python scripts/complete_configurable_processor.py --config config/kpi_config.yaml --mode targeted --kpi SM001 --input "your_data.csv"
 ```
 
-3. **Run Incremental Updates**:
+#### 3. Auto-Detection Processing
 ```bash
-python scripts/complete_configurable_processor.py --config config/complete_kpi_config.yaml --mode incremental --input data/raw/updated_data.csv
-```
-
-4. **Test Complete System**:
-```bash
-python test_system.py
-```
-
-5. **View Processed Results**:
-```bash
-python show_results.py
-```
-
-6. **Generate Final Summary**:
-```bash
-python final_summary.py
+# Core processor with auto-detection
+python scripts/kpi_processor.py --mode baseline --input "your_data.csv"
 ```
 
 ## 📁 Project Structure
@@ -86,175 +71,39 @@ python final_summary.py
 ```
 kpi_processor_test/
 ├── config/
-│   └── complete_kpi_config.yaml      # Main configuration file
+│   └── kpi_config.yaml               # Main configuration file
 ├── scripts/
-│   ├── complete_configurable_processor.py        # Main processor
-│   ├── config_validator.py           # Configuration validator
-├── data/
-│   └── raw/                          # Input data files
-├── output/                           # Generated results
-├── cache/                            # Processing cache
-├── test_cache/                       # Test cache directory
-├── logs/                             # System logs
-├── venv/                             # Python virtual environment
-├── run_kpi_menu.bat                  # 🎛️ Main interactive menu system
-├── quick_baseline.bat                # ⚡ Quick baseline processing
-├── quick_incremental.bat             # ⚡ Quick incremental processing
-├── validate_config.bat               # 🔍 Configuration validation menu
-├── targeted_kpi.bat                  # 🎯 Targeted KPI processing menu
-├── system_management.bat             # 🔧 System administration tools
-├── setup.bat                         # 🛠️ First-time setup assistant
-├── run_complete_pipeline.bat         # 🚀 End-to-end pipeline automation
-├── test_system.py                    # System test script
-├── show_results.py                   # Results display helper
-├── final_summary.py                  # Summary generation script
+│   ├── complete_configurable_processor.py  # Main KPI processor
+│   ├── config_validator.py          # Configuration validation
+│   ├── kpi_processor.py              # Core processor with auto-detection
+│   ├── validation_utils.py           # Shared validation functions
+│   └── path_config.py                # Configurable path management
+├── data/                             # Input data files (create as needed)
+├── output/                           # Generated results (auto-created)
+├── cache/                            # Processing cache (auto-created)
 └── README.md
-```
-
-## �️ Windows Batch File Automation
-
-For Windows users, the system includes comprehensive batch file automation that eliminates the need to remember command-line parameters:
-
-### 🎛️ Main Menu System
-- **`run_kpi_menu.bat`** - Complete interactive menu system
-  - All processing modes (baseline, incremental, targeted)
-  - Configuration validation options
-  - Advanced settings and cache management
-  - Built-in file validation and error checking
-
-```cmd
-run_kpi_menu.bat
-```
-
-### ⚡ Quick Processing Scripts
-- **`quick_baseline.bat`** - One-click baseline processing with defaults
-  - Uses `config\kpi_config.yaml` and `data\consolidated_data.csv`
-  - No prompts, immediate processing
-  - Perfect for routine baseline runs
-
-- **`quick_incremental.bat`** - One-click incremental processing
-  - Automatic baseline cache checking
-  - Fast incremental updates
-  - Error handling for missing baseline
-
-```cmd
-quick_baseline.bat
-quick_incremental.bat
-```
-
-### 🎯 Specialized Menu Systems
-- **`validate_config.bat`** - Configuration validation menu
-  - Config-only validation
-  - Config + data compatibility checking
-  - Strict validation modes
-  - Report generation
-
-- **`targeted_kpi.bat`** - KPI-specific processing menu
-  - Individual KPI selection (SM001, SM002, SM003, SM004, GEOGRAPHIC)
-  - Detailed KPI descriptions and guidance
-  - Efficiency reporting
-
-```cmd
-validate_config.bat
-targeted_kpi.bat
-```
-
-### 🔧 System Management
-- **`system_management.bat`** - Complete system administration
-  - System status monitoring
-  - Cache management and clearing
-  - Log file viewing
-  - Environment checking
-  - Results summary display
-
-- **`setup.bat`** - First-time setup and installation
-  - Python installation verification
-  - Package installation assistance
-  - Virtual environment setup
-  - Directory structure creation
-  - Dependency checking
-
-```cmd
-system_management.bat
-setup.bat
-```
-
-### 🚀 Complete Pipeline Automation
-- **`run_complete_pipeline.bat`** - End-to-end processing workflow
-  - Automatic validation → baseline → incremental → summary
-  - Perfect for complete processing runs
-  - Built-in error checking at each stage
-
-```cmd
-run_complete_pipeline.bat
-```
-
-### 📋 Batch File Features
-- **User-Friendly Menus**: No command-line knowledge required
-- **Error Validation**: Automatic file existence checking
-- **Built-in Help**: Descriptions and guidance throughout
-- **Flexible Options**: Both quick-run and interactive modes
-- **Comprehensive Coverage**: All system functions accessible
-
-## �🛠️ Helper Scripts
-
-### test_system.py
-Comprehensive system testing script that validates:
-- Configuration loading and validation
-- Data processing with real ServiceNow data  
-- All three processing modes (baseline/incremental/targeted)
-- Output generation and caching
-
-```bash
-python test_system.py
-```
-
-### show_results.py
-Display formatted results from processed KPI data:
-- KPI performance summary
-- Geographic analysis breakdown
-- Overall scoring and status
-
-```bash
-python show_results.py
-```
-
-### final_summary.py
-Generate comprehensive system summary including:
-- Processing statistics
-- Performance metrics
-- System capabilities overview
-
-```bash
-python final_summary.py
-```
-
-## 🎯 Sample Results
-
-Recent test with 2,385 ServiceNow incidents:
-
-```
-Records Processed: 2,385
-KPIs Calculated: 4 (SM001, SM002, SM004, GEOGRAPHIC)
-Countries Analyzed: 12 (UK, France, Turkey, Romania, Poland, etc.)
-Overall Score: 72.9 (Needs Improvement)
-
-KPI Performance:
-• SM001 (Major Incidents): Above Target (10 P2 incidents)
-• SM002 (ServiceNow Backlog): Target Met (0% backlog)  
-• SM004 (First Time Fix): Critical (41.6% vs 80% target)
-• Geographic Analysis: Available (12 countries)
 ```
 
 ## 🔧 Configuration
 
-The system uses YAML configuration for complete customization:
+The system uses `config/kpi_config.yaml` for complete customization:
+
+### Column Mappings
+Map your CSV columns to expected field names:
 
 ```yaml
-metadata:
-  version: "2.0"
-  organization: "Global IT Services"
-  
+column_mappings:
+  number: "number"
+  priority: "priority"
+  state: "incident_state"           # Maps to ServiceNow incident_state
+  opened_at: "opened_at"
+  resolved_at: "u_resolved"         # Maps to ServiceNow u_resolved
+  reassignment_count: "reassignment_count"
+  country: "location"               # Maps to location column
+```
+
+### KPI Configuration
+```yaml
 kpis:
   SM001:
     name: "Major Incidents (P1/P2)"
@@ -266,63 +115,128 @@ kpis:
       p2_max: 5
 ```
 
+## 📊 Data Requirements
+
+### Required Columns (after mapping)
+- `number`: Incident/ticket identifier
+- `opened_at`: Creation timestamp
+- `priority`: Priority level
+- `state`: Current status
+- `reassignment_count`: Number of reassignments
+
+### Optional Columns (after mapping)
+- `resolved_at`: Resolution timestamp
+- `country`: Geographic location
+
+### Date Format Support
+- **DD/MM/YYYY format**: Automatically handled with `dayfirst=True`
+- **Various timestamp formats**: Flexible parsing with error handling
+- **Missing dates**: Graceful handling with clear warnings
+
 ## 📈 Processing Modes
 
 ### Baseline Mode
 Complete processing of all data to establish baseline KPIs:
 ```bash
-python scripts/complete_configurable_processor.py --config config.yaml --mode baseline --input data.csv
+python scripts/complete_configurable_processor.py --config config/kpi_config.yaml --mode baseline --input "your_data.csv"
 ```
 
 ### Incremental Mode
 Efficient updates processing only changed records:
 ```bash
-python scripts/complete_configurable_processor.py --config config.yaml --mode incremental --input data.csv
+python scripts/complete_configurable_processor.py --config config/kpi_config.yaml --mode incremental --input "your_data.csv"
 ```
 
 ### Targeted Mode
 Update specific KPIs with minimal processing:
 ```bash
-python scripts/complete_configurable_processor.py --config config.yaml --mode targeted --kpi SM001 --input data.csv
+python scripts/complete_configurable_processor.py --config config/kpi_config.yaml --mode targeted --kpi SM001 --input "your_data.csv"
+```
+
+## 🎯 Sample Results
+
+Recent test with 2,438 ServiceNow incidents:
+
+```
+Records processed: 2,438
+Configuration version: 1.0
+Enabled KPIs: SM001, SM002, SM004, GEOGRAPHIC
+Overall score: 68.8/100 (Needs Improvement)
+
+KPI Summary:
+  SM001: Above Target
+  SM002: Needs Improvement
+  SM004: Critical
+  GEOGRAPHIC: Available
 ```
 
 ## 🌍 Geographic Analysis
 
-The system provides detailed geographic analysis including:
+When location data is available, the system provides:
 - Country-wise incident distribution
 - Priority breakdown by country
 - Volume trends and KPI performance by region
 
-## 📊 Validation & Quality
+## 📊 Output
 
-- **Configuration Validator**: Comprehensive YAML validation with business rule checking
-- **Data Compatibility**: Automatic validation against actual data files
-- **Error Handling**: Robust error handling with detailed logging
-- **Schema Validation**: Ensures configuration compliance
+The system generates:
+- **JSON results files** with calculated KPIs and metadata
+- **Performance metrics** and processing statistics
+- **Validation reports** with clear error messages
+- **Geographic analysis** (when location data available)
 
-## 🚀 Production Features
+## 🚀 Performance Features
 
-- **Caching System**: Intelligent caching for incremental processing
-- **Performance Scoring**: Weighted KPI scoring with configurable bands
-- **Export Capabilities**: JSON output with comprehensive metadata
-- **Logging**: Detailed logging with configurable levels
+- **Vectorized Operations**: Efficient pandas operations for large datasets
+- **Optimized Signature Generation**: Fast change detection algorithms
+- **Geographic Analysis**: Efficient country-based grouping
+- **Memory Efficient**: Streamlined data processing pipelines
+- **Defensive Programming**: Graceful handling of missing columns
 
-## 🔍 Testing
+## 🔍 Troubleshooting
 
-Run the comprehensive test suite:
+### Common Issues
+
+1. **Column Mapping Errors**
+   - Update `column_mappings` in `config/kpi_config.yaml` to match your CSV structure
+   - Example: Map `resolved_at: "u_resolved"` for ServiceNow data
+
+2. **Date Parsing Issues**
+   - System automatically handles DD/MM/YYYY format with `dayfirst=True`
+   - Check for consistent date formats in your data
+
+3. **Missing Columns**
+   - System provides clear warnings for missing optional columns
+   - Required columns will cause processing to fail with clear error messages
+
+4. **File Path Issues**
+   - Use quotes around filenames with spaces: `"PYTHON IM Q1 (2025).csv"`
+   - Ensure input files exist and are accessible
+
+### Debug Mode
+Add `--validate` flag for detailed validation output:
 ```bash
-python test_system.py
+python scripts/complete_configurable_processor.py --config config/kpi_config.yaml --mode baseline --input "your_data.csv" --validate
 ```
 
-This validates:
-- Configuration loading and validation
-- Data processing with real ServiceNow data
-- All three processing modes
-- Output generation and caching
+### Exit Codes
+- **0**: Success
+- **1**: Warnings/minor issues
+- **2**: Errors
+- **130**: Interrupted (Ctrl+C)
+
+## 🏆 Recent Improvements
+
+✅ **Efficiency Optimizations**: Removed BOM characters, vectorized pandas operations  
+✅ **Column Mapping Fixes**: Proper ServiceNow column support (`u_resolved`, `incident_state`, `location`)  
+✅ **Date Parsing**: European DD/MM/YYYY format support with `dayfirst=True`  
+✅ **Defensive Programming**: Graceful handling of missing columns with clear warnings  
+✅ **Project Organization**: Consistent file structure in `scripts/` folder  
+✅ **Minimalist Approach**: Removed 20+ non-essential files for cleaner codebase  
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🤝 Contributing
 
@@ -331,18 +245,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
-## 📞 Support
-
-For questions and support:
-- Create an issue in this repository
-- Contact the development team
-
-## 🏆 Achievements
-
-✅ **Fully Operational System**  
-✅ **Real Data Tested** (2,385+ ServiceNow incidents)  
-✅ **Multi-Country Support** (12 countries analyzed)  
-✅ **Production Ready** (Comprehensive validation & error handling)  
-✅ **Configurable Architecture** (Zero hardcoded specifications)  
-✅ **Performance Optimized** (Incremental processing with caching)
