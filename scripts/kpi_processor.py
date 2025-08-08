@@ -12,8 +12,7 @@ import pandas as pd
 import tempfile
 import os
 
-# Add scripts directory to path
-sys.path.insert(0, str(Path(__file__).parent / 'scripts'))
+sys.path.insert(0, str(Path(__file__).parent))
 
 try:
     from complete_configurable_processor import CompleteConfigurableProcessor
